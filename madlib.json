@@ -1,7 +1,7 @@
 {
   "name": "invective",
   "version": "0.0.1",
-  "main": "src/Main.mad",
+  "main": "src/Invective.mad",
   "importAliases": {
     ".": "src"
   },
