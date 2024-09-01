@@ -13,3 +13,9 @@ export rad2deg = multiply(DEGREES)
 
 deg2rad :: Float -> Float
 export deg2rad = divide($, DEGREES)
+
+negate :: Number a => a -> a
+export negate = (z) => z * -1
+
+getMagnitude :: Float -> Float -> Float
+export getMagnitude = (x, y) => x * x * y * y

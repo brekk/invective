@@ -1,7 +1,7 @@
 import { always, equals, identity, ifElse } from "Function"
 import Math from "Math"
 
-import { deg2rad, rad2deg } from "@/Math"
+import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
 
 
 
@@ -12,6 +12,15 @@ export toTuple = where {
   Vector(x, y) =>
     #[x, y]
 }
+
+fromTuple :: #[Float, Float] -> Vector
+export fromTuple = where {
+  #[x, y] =>
+    Vector(x, y)
+}
+
+vectorize :: Float -> Vector
+export vectorize = (a) => Vector(a, a)
 
 concrete :: (Float -> Float -> a) -> Vector -> a
 export concrete = (fn, vec) => where(vec) {
@@ -41,34 +50,17 @@ export combine = (fn, vec, vec2) => where(#[vec, vec2]) {
     fn(x, y, x2, y2)
 }
 
-vectorize :: Float -> Vector
-export vectorize = (a) => Vector(a, a)
 
 add :: Vector -> Vector -> Vector
 export add = combine((x, y, x2, y2) => Vector(x + x2, y + y2))
 
-addScalar :: Float -> Vector -> Vector
-export addScalar = (s, v) => apply(Math.add(s), v)
 
-addScalarX :: Float -> Vector -> Vector
-export addScalarX = (s, v) => applyX(Math.add(s), v)
-
-addScalarY :: Float -> Vector -> Vector
-export addScalarY = (s, v) => applyY(Math.add(s), v)
 
 divide :: Vector -> Vector -> Vector
 export divide = combine((x, y, x2, y2) => Vector(x / x2, y / y2))
 
-divideScalar :: Float -> Vector -> Vector
-export divideScalar = (s, v) => concrete((x, y) => s == 0 ? Vector(0, 0) : Vector(x / s, y / s), v)
 
-_divide = (s, w) => s == 0 ? 0 : (w / s)
 
-divideScalarX :: Float -> Vector -> Vector
-export divideScalarX = (s, v) => applyX(_divide(s), v)
-
-divideScalarY :: Float -> Vector -> Vector
-export divideScalarY = (s, v) => applyY(_divide(s), v)
 
 multiply :: Vector -> Vector -> Vector
 export multiply = combine((x, y, x2, y2) => Vector(x * x2, y * y2))
@@ -79,28 +71,15 @@ export multiplyX = combine((x, y, x2, _) => Vector(x * x2, y))
 multiplyY :: Vector -> Vector -> Vector
 export multiplyY = combine((x, y, _, y2) => Vector(x, y * y2))
 
-multiplyScalar :: Float -> Vector -> Vector
-export multiplyScalar = (s, v) => apply(Math.multiply(s), v)
-
-multiplyScalarX :: Float -> Vector -> Vector
-export multiplyScalarX = (s, v) => applyX(Math.multiply(s), v)
-
-multiplyScalarY :: Float -> Vector -> Vector
-export multiplyScalarY = (s, v) => applyY(Math.multiply(s), v)
-
-_invert = (z) => z * -1
-
 invert :: Vector -> Vector
-export invert = apply(_invert)
+export invert = apply(negate)
 
 invertX :: Vector -> Vector
-export invertX = applyX(_invert)
+export invertX = applyX(negate)
 
 invertY :: Vector -> Vector
-export invertY = applyY(_invert)
+export invertY = applyY(negate)
 
-getMagnitude :: Float -> Float -> Float
-export getMagnitude = (x, y) => x * x * y * y
 
 magnitude :: Vector -> Float
 export magnitude = concrete(getMagnitude)
@@ -249,3 +228,33 @@ export rotateByDeg = (r, vec) => pipe(
   deg2rad,
   rotateBy($, vec),
 )(r)
+
+addScalar :: Float -> Vector -> Vector
+export addScalar = (s, v) => apply(Math.add(s), v)
+
+addScalarX :: Float -> Vector -> Vector
+export addScalarX = (s, v) => applyX(Math.add(s), v)
+
+addScalarY :: Float -> Vector -> Vector
+export addScalarY = (s, v) => applyY(Math.add(s), v)
+
+divideScalar :: Float -> Vector -> Vector
+export divideScalar = (s, v) => concrete((x, y) => s == 0 ? Vector(0, 0) : Vector(x / s, y / s), v)
+
+zivide :: Float -> Float -> Float
+zivide = (s, w) => s == 0 ? 0 : (w / s)
+
+divideScalarX :: Float -> Vector -> Vector
+export divideScalarX = (s, v) => applyX(zivide(s), v)
+
+divideScalarY :: Float -> Vector -> Vector
+export divideScalarY = (s, v) => applyY(zivide(s), v)
+
+multiplyScalar :: Float -> Vector -> Vector
+export multiplyScalar = (s, v) => apply(Math.multiply(s), v)
+
+multiplyScalarX :: Float -> Vector -> Vector
+export multiplyScalarX = (s, v) => applyX(Math.multiply(s), v)
+
+multiplyScalarY :: Float -> Vector -> Vector
+export multiplyScalarY = (s, v) => applyY(Math.multiply(s), v)

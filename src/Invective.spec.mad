@@ -11,7 +11,6 @@ import {
   addScalarX,
   addScalarY,
   apply,
-  combine,
   concrete,
   cross,
   distance,
@@ -22,7 +21,7 @@ import {
   divideScalarX,
   divideScalarY,
   dot,
-  getMagnitude,
+  fromTuple,
   horizontalAngle,
   horizontalDegree,
   invert,
@@ -50,13 +49,13 @@ import {
   rotateTo,
   rotateToDeg,
   same,
-  squareDistance,
   toTuple,
   unfloat,
   verticalAngle,
   verticalDegree,
   zero,
 } from "@/Invective"
+import { getMagnitude } from "@/Math"
 
 
 
@@ -89,7 +88,7 @@ report(divideScalarX($, H.fourThree), "divideScalarX", [#[2, Vector(2, 3)], #[0,
 report(divideScalarY($, H.fourThree), "divideScalarY", [#[2, Vector(4, 1.5)], #[0, Vector(4, 0)]])
 
 
-report(multiplyScalar($, H.fourThree), "multiplyScalar", [#[2, Vector(8, 6)]])
+report(multiplyScalar($, H.fourThree), "multiplyScalar", [#[2, fromTuple(#[8, 6])]])
 report(multiplyScalarX($, H.fourThree), "multiplyScalarX", [#[2, Vector(8, 3)]])
 report(multiplyScalarY($, H.fourThree), "multiplyScalarY", [#[2, Vector(4, 6)]])
 
