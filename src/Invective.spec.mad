@@ -1,0 +1,180 @@
+import Math from "Math"
+import { assertEquals, test } from "Test"
+
+import { report } from "Study"
+
+import {
+  Vector,
+  ZERO,
+  add,
+  addScalar,
+  addScalarX,
+  addScalarY,
+  apply,
+  combine,
+  concrete,
+  cross,
+  distance,
+  distanceX,
+  distanceY,
+  divide,
+  divideScalar,
+  divideScalarX,
+  divideScalarY,
+  dot,
+  getMagnitude,
+  horizontalAngle,
+  horizontalDegree,
+  invert,
+  invertX,
+  invertY,
+  isZero,
+  length,
+  limit,
+  magnitude,
+  mix,
+  mixX,
+  mixY,
+  multiply,
+  multiplyScalar,
+  multiplyScalarX,
+  multiplyScalarY,
+  multiplyX,
+  multiplyY,
+  normalize,
+  projectOnto,
+  rotate,
+  rotateBy,
+  rotateByDeg,
+  rotateDeg,
+  rotateTo,
+  rotateToDeg,
+  same,
+  squareDistance,
+  toTuple,
+  unfloat,
+  verticalAngle,
+  verticalDegree,
+  zero,
+} from "@/Invective"
+
+
+
+// harness
+H = {
+  fourThree: Vector(4, 3),
+  threeFour: Vector(3, 4),
+  oneZero: Vector(1, 0),
+  oneOne: Vector(1, 1),
+  frac: Vector(1 / 2, 1 / 3),
+  zeroZero: Vector(0, 0),
+}
+
+report(toTuple, "toTuple", [#[Vector(100, 200), #[100, 200]]])
+
+report(concrete($, H.fourThree), "concrete", [#[(a, b) => a * b, 12]])
+
+report(add(H.fourThree), "add", [#[H.threeFour, Vector(7, 7)]])
+report(divide(H.fourThree), "divide", [#[H.threeFour, Vector(4 / 3, 0.75)]])
+report(multiply(H.fourThree), "multiply", [#[H.threeFour, Vector(12, 12)]])
+report(multiplyX($, H.fourThree), "multiplyX", [#[H.threeFour, Vector(12, 4)]])
+report(multiplyY($, H.fourThree), "multiplyY", [#[H.threeFour, Vector(3, 12)]])
+
+report(addScalar($, H.fourThree), "addScalar", [#[2, Vector(6, 5)]])
+report(addScalarX($, H.fourThree), "addScalarX", [#[2, Vector(6, 3)]])
+report(addScalarY($, H.fourThree), "addScalarY", [#[2, Vector(4, 5)]])
+
+report(divideScalar($, H.fourThree), "divideScalar", [#[2, Vector(2, 1.5)], #[0, Vector(0, 0)]])
+report(divideScalarX($, H.fourThree), "divideScalarX", [#[2, Vector(2, 3)], #[0, Vector(0, 3)]])
+report(divideScalarY($, H.fourThree), "divideScalarY", [#[2, Vector(4, 1.5)], #[0, Vector(4, 0)]])
+
+
+report(multiplyScalar($, H.fourThree), "multiplyScalar", [#[2, Vector(8, 6)]])
+report(multiplyScalarX($, H.fourThree), "multiplyScalarX", [#[2, Vector(8, 3)]])
+report(multiplyScalarY($, H.fourThree), "multiplyScalarY", [#[2, Vector(4, 6)]])
+
+report(invert, "invert", [#[H.threeFour, Vector(-3, -4)]])
+report(invertX, "invertX", [#[H.threeFour, Vector(-3, 4)]])
+report(invertY, "invertY", [#[H.threeFour, Vector(3, -4)]])
+
+report(getMagnitude(4), "getMagnitude", [#[3, 144]])
+report(magnitude, "getMagnitude", [#[H.threeFour, 144]])
+
+report(length, "length", [#[H.threeFour, 12]])
+report(normalize, "normalize", [#[H.threeFour, Vector(1 / 4, 1 / 3)], #[Vector(0, 2), H.oneZero]])
+report(limit(2, 3), "limit", [#[H.threeFour, Vector(9, 12)], #[Vector(1, 1), Vector(1, 1)]])
+
+report(unfloat, "unfloat", [#[H.frac, H.oneZero]])
+
+report(mix(2, H.threeFour), "mix", [#[H.fourThree, Vector(5, 2)]])
+report(mixX(2, H.threeFour), "mixX", [#[H.fourThree, Vector(5, 4)]])
+report(mixY(2, H.threeFour), "mixY", [#[H.fourThree, Vector(3, 2)]])
+
+test(
+  "ZERO",
+  () => do {
+    _ <- assertEquals(zero(H.threeFour), ZERO)
+    return assertEquals(isZero(ZERO), true)
+  },
+)
+
+report(dot(H.threeFour), "dot", [#[H.fourThree, 24]])
+report(cross(H.threeFour), "cross", [#[H.fourThree, -7]])
+
+report(projectOnto(H.threeFour), "projectOnto", [#[H.fourThree, Vector(3.84, 2.88)]])
+
+report(distanceX(H.threeFour), "distanceX", [#[H.fourThree, -1]])
+report(distanceY(H.threeFour), "distanceY", [#[H.fourThree, 1]])
+report(distance(H.threeFour), "distance", [#[H.fourThree, 1.4142135623730951]])
+
+report(same(H.threeFour), "equals", [#[H.threeFour, true], #[H.fourThree, false]])
+
+report(rotate(90), "rotate", [#[H.threeFour, Vector(-4.920207502789742, 0.8896955262849926)]])
+
+report(
+  horizontalAngle,
+  "horizontalAngle",
+  [#[H.threeFour, 0.9272952180016122], #[H.fourThree, 0.6435011087932844]],
+)
+
+report(
+  horizontalDegree,
+  "horizontalDegree",
+  [#[H.threeFour, 53.13010235415598], #[H.fourThree, 36.86989764584402]],
+)
+
+report(
+  verticalAngle,
+  "verticalAngle",
+  [#[H.fourThree, 0.9272952180016122], #[H.threeFour, 0.6435011087932844]],
+)
+
+report(
+  verticalDegree,
+  "verticalDegree",
+  [#[H.fourThree, 53.13010235415598], #[H.threeFour, 36.86989764584402]],
+)
+
+report(
+  pipe(
+    rotateDeg(90),
+    apply(Math.round),
+  ),
+  "rotateDeg",
+  [#[H.fourThree, Vector(-3, 4)], #[H.threeFour, Vector(-4, 3)]],
+)
+
+report(rotateTo(135), "rotateTo", [#[H.fourThree, Vector(-4.980439175705923, 0.44184343052002406)]])
+report(
+  rotateToDeg(135),
+  "rotateToDeg",
+  [#[H.fourThree, Vector(-4.949747468305833, 0.7071067811865479)]],
+)
+
+
+report(rotateBy(135), "rotateBy", [#[H.fourThree, Vector(-1.81869266249685, -4.657505448132092)]])
+report(
+  rotateByDeg(135),
+  "rotateByDeg",
+  [#[H.fourThree, Vector(-4.384062043356595, -2.4041630560342604)]],
+)

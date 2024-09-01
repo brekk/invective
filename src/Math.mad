@@ -1,0 +1,15 @@
+import { divide, multiply } from "Math"
+
+
+
+PI :: Float
+export PI = 3.14159265358979323846
+
+DEGREES :: Float
+export DEGREES = 180 / PI
+
+rad2deg :: Float -> Float
+export rad2deg = multiply(DEGREES)
+
+deg2rad :: Float -> Float
+export deg2rad = divide($, DEGREES)

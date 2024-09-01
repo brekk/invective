@@ -1,0 +1,251 @@
+import { always, equals, identity, ifElse } from "Function"
+import Math from "Math"
+
+import { deg2rad, rad2deg } from "@/Math"
+
+
+
+export type Vector = Vector(Float, Float)
+
+toTuple :: Vector -> #[Float, Float]
+export toTuple = where {
+  Vector(x, y) =>
+    #[x, y]
+}
+
+concrete :: (Float -> Float -> a) -> Vector -> a
+export concrete = (fn, vec) => where(vec) {
+  Vector(x, y) =>
+    fn(x, y)
+}
+
+modify :: (Float -> Float) -> (Float -> Float) -> Vector -> Vector
+modify = (fnX, fnY, v) => where(v) {
+  Vector(x, y) =>
+    Vector(fnX(x), fnY(y))
+}
+
+apply :: (Float -> Float) -> Vector -> Vector
+export apply = (fn, v) => modify(fn, fn, v)
+
+applyX :: (Float -> Float) -> Vector -> Vector
+export applyX = (fn, v) => modify(fn, identity, v)
+
+applyY :: (Float -> Float) -> Vector -> Vector
+export applyY = (fn, v) => modify(identity, fn, v)
+
+
+combine :: (Float -> Float -> Float -> Float -> a) -> Vector -> Vector -> a
+export combine = (fn, vec, vec2) => where(#[vec, vec2]) {
+  #[Vector(x, y), Vector(x2, y2)] =>
+    fn(x, y, x2, y2)
+}
+
+vectorize :: Float -> Vector
+export vectorize = (a) => Vector(a, a)
+
+add :: Vector -> Vector -> Vector
+export add = combine((x, y, x2, y2) => Vector(x + x2, y + y2))
+
+addScalar :: Float -> Vector -> Vector
+export addScalar = (s, v) => apply(Math.add(s), v)
+
+addScalarX :: Float -> Vector -> Vector
+export addScalarX = (s, v) => applyX(Math.add(s), v)
+
+addScalarY :: Float -> Vector -> Vector
+export addScalarY = (s, v) => applyY(Math.add(s), v)
+
+divide :: Vector -> Vector -> Vector
+export divide = combine((x, y, x2, y2) => Vector(x / x2, y / y2))
+
+divideScalar :: Float -> Vector -> Vector
+export divideScalar = (s, v) => concrete((x, y) => s == 0 ? Vector(0, 0) : Vector(x / s, y / s), v)
+
+_divide = (s, w) => s == 0 ? 0 : (w / s)
+
+divideScalarX :: Float -> Vector -> Vector
+export divideScalarX = (s, v) => applyX(_divide(s), v)
+
+divideScalarY :: Float -> Vector -> Vector
+export divideScalarY = (s, v) => applyY(_divide(s), v)
+
+multiply :: Vector -> Vector -> Vector
+export multiply = combine((x, y, x2, y2) => Vector(x * x2, y * y2))
+
+multiplyX :: Vector -> Vector -> Vector
+export multiplyX = combine((x, y, x2, _) => Vector(x * x2, y))
+
+multiplyY :: Vector -> Vector -> Vector
+export multiplyY = combine((x, y, _, y2) => Vector(x, y * y2))
+
+multiplyScalar :: Float -> Vector -> Vector
+export multiplyScalar = (s, v) => apply(Math.multiply(s), v)
+
+multiplyScalarX :: Float -> Vector -> Vector
+export multiplyScalarX = (s, v) => applyX(Math.multiply(s), v)
+
+multiplyScalarY :: Float -> Vector -> Vector
+export multiplyScalarY = (s, v) => applyY(Math.multiply(s), v)
+
+_invert = (z) => z * -1
+
+invert :: Vector -> Vector
+export invert = apply(_invert)
+
+invertX :: Vector -> Vector
+export invertX = applyX(_invert)
+
+invertY :: Vector -> Vector
+export invertY = applyY(_invert)
+
+getMagnitude :: Float -> Float -> Float
+export getMagnitude = (x, y) => x * x * y * y
+
+magnitude :: Vector -> Float
+export magnitude = concrete(getMagnitude)
+
+length :: Vector -> Float
+export length = concrete(
+  (x, y) => pipe(
+    getMagnitude(x),
+    Math.sqrt,
+  )(y),
+)
+
+normalize :: Vector -> Vector
+export normalize = (vec) => ifElse(
+  pipe(
+    length,
+    equals(0),
+  ),
+  always(Vector(1, 0)),
+  (v) => pipe(
+    length,
+    vectorize,
+    divide(v),
+  )(v),
+)(vec)
+
+_limit = (max, factor, w) => Math.abs(w) > max ? w * factor : w
+
+limit :: Float -> Float -> Vector -> Vector
+export limit = (max, factor, vec) => apply(_limit(max, factor), vec)
+
+unfloat :: Vector -> Vector
+export unfloat = apply(Math.round)
+
+mixX :: Float -> Vector -> Vector -> Vector
+export mixX = (s, v1, v2) => combine((x, y, x2, _) => Vector((1 - s) * x + s * x2, y), v1, v2)
+
+mixY :: Float -> Vector -> Vector -> Vector
+export mixY = (s, v1, v2) => combine((x, y, _, y2) => Vector(x, (1 - s) * y + s * y2), v1, v2)
+
+mix :: Float -> Vector -> Vector -> Vector
+export mix = (s, v1, v2) => combine(
+  (x, y, x2, y2) => Vector((1 - s) * x + s * x2, (1 - s) * y + s * y2),
+  v1,
+  v2,
+)
+
+export ZERO = Vector(0, 0)
+
+zero :: Vector -> Vector
+export zero = concrete((_, _) => ZERO)
+
+isZero :: Vector -> Boolean
+export isZero = concrete((x, y) => x == 0 && y == 0)
+
+dot :: Vector -> Vector -> Float
+export dot = combine((x, y, x2, y2) => x * x2 + y * y2)
+
+cross :: Vector -> Vector -> Float
+export cross = combine((x, y, x2, y2) => (x * y2) - (y * x2))
+
+projectOnto :: Vector -> Vector -> Vector
+export projectOnto = combine(
+  (x, y, x2, y2) => {
+    num = (x * x2) + (y * y2)
+    denom = (x2 * x2) + (y2 * y2)
+    coeff = num / denom
+    return Vector(x2 * coeff, y2 * coeff)
+  },
+)
+
+distanceX :: Vector -> Vector -> Float
+export distanceX = combine((x, _, x2, _) => x - x2)
+
+distanceY :: Vector -> Vector -> Float
+export distanceY = combine((_, y, _, y2) => y - y2)
+
+squareDistance :: Vector -> Vector -> Float
+export squareDistance = combine(
+  (x, y, x2, y2) => {
+    dx = x - x2
+    dy = y - y2
+    return dx * dx + dy * dy
+  },
+)
+
+distance :: Vector -> Vector -> Float
+export distance = (v1, v2) => pipe(
+  squareDistance(v1),
+  Math.sqrt,
+)(v2)
+
+same :: Vector -> Vector -> Boolean
+export same = combine((x, y, x2, y2) => x == x2 && y == y2)
+
+rotate :: Float -> Vector -> Vector
+export rotate = (d, vec) => concrete(
+  (x, y) => {
+    dCos = Math.cos(d)
+    dSin = Math.sin(d)
+    return Vector((x * dCos) - (y * dSin), (x * dSin) + (y * dCos))
+  },
+  vec,
+)
+
+horizontalAngle :: Vector -> Float
+export horizontalAngle = concrete((x, y) => Math.atan2(y, x))
+
+horizontalDegree :: Vector -> Float
+export horizontalDegree = pipe(
+  horizontalAngle,
+  rad2deg,
+)
+verticalAngle :: Vector -> Float
+export verticalAngle = concrete(Math.atan2)
+
+verticalDegree :: Vector -> Float
+export verticalDegree = pipe(
+  verticalAngle,
+  rad2deg,
+)
+
+rotateDeg :: Float -> Vector -> Vector
+export rotateDeg = (deg, vec) => rotate(deg2rad(deg), vec)
+
+rotateTo :: Float -> Vector -> Vector
+export rotateTo = (rot, vec) => pipe(
+  horizontalAngle,
+  (h) => rotate(rot - h, vec),
+)(vec)
+
+rotateToDeg :: Float -> Vector -> Vector
+export rotateToDeg = (rot, vec) => pipe(
+  deg2rad,
+  rotate($, vec),
+)(rot)
+
+rotateBy :: Float -> Vector -> Vector
+export rotateBy = (rot, vec) => pipe(
+  horizontalAngle,
+  (h) => rotate(h + rot, vec),
+)(vec)
+
+rotateByDeg :: Float -> Vector -> Vector
+export rotateByDeg = (r, vec) => pipe(
+  deg2rad,
+  rotateBy($, vec),
+)(r)
