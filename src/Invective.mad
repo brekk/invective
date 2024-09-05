@@ -1,4 +1,5 @@
 import { always, equals, identity, ifElse } from "Function"
+import {} from "Functor"
 import Math from "Math"
 
 import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
@@ -6,6 +7,10 @@ import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
 
 
 export type Vector a = Vector(a, a)
+
+instance Functor Vector {
+  map = apply
+}
 
 toTuple :: Vector a -> #[a, a]
 export toTuple = where {
@@ -43,18 +48,14 @@ export applyX = (fn, v) => modify(fn, identity, v)
 applyY :: (a -> a) -> Vector a -> Vector a
 export applyY = (fn, v) => modify(identity, fn, v)
 
-
 combine :: Number a => (a -> a -> a -> a -> b) -> Vector a -> Vector a -> b
 export combine = (fn, vec, vec2) => where(#[vec, vec2]) {
   #[Vector(x, y), Vector(x2, y2)] =>
     fn(x, y, x2, y2)
 }
 
-
 add :: Number a => Vector a -> Vector a -> Vector a
 export add = combine((x, y, x2, y2) => Vector(x + x2, y + y2))
-
-
 
 divide :: Vector Float -> Vector Float -> Vector Float
 export divide = combine((x, y, x2, y2) => Vector(x / x2, y / y2))
@@ -76,7 +77,6 @@ export invertX = applyX(negate)
 
 invertY :: Number a => Vector a -> Vector a
 export invertY = applyY(negate)
-
 
 magnitude :: Vector Float -> Float
 export magnitude = concrete(getMagnitude)

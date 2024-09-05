@@ -10,7 +10,6 @@ import {
   addScalar,
   addScalarX,
   addScalarY,
-  apply,
   concrete,
   cross,
   distance,
@@ -157,7 +156,7 @@ report(
 report(
   pipe(
     rotateDeg(90),
-    apply(Math.round),
+    map(Math.round),
   ),
   "rotateDeg",
   [#[H.fourThree, Vector(-3, 4)], #[H.threeFour, Vector(-4, 3)]],
