@@ -1,8 +1,11 @@
+import type { Maybe } from "Maybe"
+
 import type { Vector } from "@/Vector"
 
 import List from "List"
+import { Just, Nothing } from "Maybe"
 
-import { Vector } from "@/Vector"
+import { Vector, distance } from "@/Vector"
 
 
 
@@ -45,3 +48,37 @@ export interpolate = (riseOverRun, x, y, x2, y2) => if (!riseOverRun) do {
   b = run(y2, x, x2)
   return List.concat(a, b)
 }
+
+nearest :: Vector Float -> List (Vector Float) -> Maybe (Vector Float)
+export nearest = (v, vs) => List.reduce(
+  (prev, w) => where(prev) {
+    Nothing =>
+      Just(w)
+
+    Just(u) =>
+      if (distance(w, v) < distance(u, v)) {
+        Just(w)
+      } else {
+        prev
+      }
+  },
+  Nothing,
+  vs,
+)
+
+farthest :: Vector Float -> List (Vector Float) -> Maybe (Vector Float)
+export farthest = (v, vs) => List.reduce(
+  (prev, w) => where(prev) {
+    Nothing =>
+      Just(w)
+
+    Just(u) =>
+      if (distance(w, v) > distance(u, v)) {
+        Just(w)
+      } else {
+        prev
+      }
+  },
+  Nothing,
+  vs,
+)

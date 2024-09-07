@@ -1,6 +1,8 @@
+import { Just, Nothing } from "Maybe"
+
 import { caseN2, report } from "Study"
 
-import { interpolate, rise, run } from "@/List"
+import { farthest, interpolate, nearest, rise, run } from "@/List"
 import { Vector } from "@/Vector"
 
 
@@ -65,5 +67,27 @@ report(
         Vector(4, 5),
       ],
     ],
+  ],
+)
+
+report(
+  nearest(Vector(0, 0)),
+  "nearest",
+  [
+    #[[Vector(1, 0), Vector(2, 0), Vector(3, 0)], Just(Vector(1, 0))],
+    #[[], Nothing],
+    #[[Vector(2, 2), Vector(1, 0)], Just(Vector(1, 0))],
+    #[[Vector(1, 0), Vector(0, 1)], Just(Vector(1, 0))],
+  ],
+)
+
+report(
+  farthest(Vector(0, 0)),
+  "farthest",
+  [
+    #[[Vector(1, 0), Vector(2, 0), Vector(3, 0)], Just(Vector(3, 0))],
+    #[[], Nothing],
+    #[[Vector(2, 2), Vector(1, 0)], Just(Vector(2, 2))],
+    #[[Vector(1, 0), Vector(0, 1)], Just(Vector(1, 0))],
   ],
 )

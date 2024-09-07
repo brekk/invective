@@ -1,4 +1,4 @@
-import { interpolate, rise, run } from "@/List"
+import { farthest, interpolate, nearest, rise, run } from "@/List"
 import {
   ZERO,
   add,
@@ -123,3 +123,5 @@ export vectorize
 export verticalAngle
 export verticalDegree
 export zero
+export nearest
+export farthest
