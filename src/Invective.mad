@@ -11,8 +11,7 @@ import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
 
 export type Vector a = Vector(a, a)
 
-instance (Show a,
-Comparable a) => Comparable (Vector a) {
+instance Comparable a => Comparable (Vector a) {
   compare = compareXY
 }
 
@@ -28,7 +27,7 @@ export getY = where {
     y
 }
 
-compareXY :: (Show a, Comparable a) => Vector a -> Vector a -> Comparison
+compareXY :: Comparable a => Vector a -> Vector a -> Comparison
 export compareXY = (a, b) => where(#[a, b]) {
   #[Vector(x, y), Vector(x2, y2)] =>
     do {
