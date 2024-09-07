@@ -1,3 +1,5 @@
+import type { Comparison } from "Compare"
+
 import { EQ, GT, LT } from "Compare"
 import { always, equals, identity, ifElse } from "Function"
 import {} from "Functor"
@@ -9,16 +11,55 @@ import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
 
 export type Vector a = Vector(a, a)
 
-instance Comparable a => Comparable (Vector a) {
-  compare = (a, b) => where(#[a, b]) {
-    #[Vector(x, y), Vector(x2, y2)] =>
-      if (x == x2 && y == y2) {
+instance (Show a,
+Comparable a) => Comparable (Vector a) {
+  compare = compareXY
+}
+
+getX :: Vector a -> a
+export getX = where {
+  Vector(x, _) =>
+    x
+}
+
+getY :: Vector a -> a
+export getY = where {
+  Vector(_, y) =>
+    y
+}
+
+compareXY :: (Show a, Comparable a) => Vector a -> Vector a -> Comparison
+export compareXY = (a, b) => where(#[a, b]) {
+  #[Vector(x, y), Vector(x2, y2)] =>
+    do {
+      xEq = x == x2
+      yEq = y == y2
+      xLt = x < x2
+      yLt = y < y2
+      return if (xEq && yEq) {
         EQ
-      } else if ((x == x2 && y < y2) || (x < x2 && y == y2)) {
+      } else if (xLt && yLt) {
+        LT
+      } else if (xEq && yLt) {
+        LT
+      } else if (yEq && xLt) {
         LT
       } else {
         GT
       }
+    }
+}
+
+compareLength :: Vector Float -> Vector Float -> Comparison
+export compareLength = (a, b) => {
+  aL = length(a)
+  bL = length(b)
+  return if (aL == bL) {
+    EQ
+  } else if (aL < bL) {
+    LT
+  } else {
+    GT
   }
 }
 

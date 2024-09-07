@@ -1,7 +1,8 @@
+import { EQ, GT, LT } from "Compare"
 import Math from "Math"
 import { assertEquals, test } from "Test"
 
-import { report } from "Study"
+import { caseN2, report } from "Study"
 
 import {
   Vector,
@@ -10,6 +11,8 @@ import {
   addScalar,
   addScalarX,
   addScalarY,
+  compareLength,
+  compareXY,
   concrete,
   cross,
   distance,
@@ -21,6 +24,8 @@ import {
   divideScalarY,
   dot,
   fromTuple,
+  getX,
+  getY,
   horizontalAngle,
   horizontalDegree,
   invert,
@@ -175,4 +180,46 @@ report(
   rotateByDeg(135),
   "rotateByDeg",
   [#[H.fourThree, Vector(-4.384062043356595, -2.4041630560342604)]],
+)
+
+HARNESS = { a: Vector(1, 1), b: Vector(2, 2), c: Vector(2, 3), d: Vector(3, 2) }
+
+report(
+  caseN2(compareXY),
+  "compareXY",
+  [
+    #[#[HARNESS.a, HARNESS.b], LT],
+    #[#[HARNESS.b, HARNESS.a], GT],
+    #[#[HARNESS.b, HARNESS.b], EQ],
+    #[#[HARNESS.b, HARNESS.c], LT],
+    #[#[HARNESS.b, HARNESS.d], LT],
+    #[#[HARNESS.c, HARNESS.b], GT],
+  ],
+)
+
+test(
+  "literal compare",
+  () => do {
+    _ <- assertEquals(HARNESS.a < HARNESS.b, true)
+    _ <- assertEquals(HARNESS.b < HARNESS.c, true)
+    _ <- assertEquals(HARNESS.c > HARNESS.a, true)
+    return assertEquals(HARNESS.c == HARNESS.c, true)
+  },
+)
+
+report(getX, "getX", [#[Vector(2, 3), 2]])
+report(getY, "getY", [#[Vector(2, 3), 3]])
+
+report(
+  caseN2(compareLength),
+  "compareLength",
+  [
+    #[#[HARNESS.a, HARNESS.b], LT],
+    #[#[HARNESS.b, HARNESS.a], GT],
+    #[#[HARNESS.b, HARNESS.b], EQ],
+    #[#[HARNESS.b, HARNESS.c], LT],
+    #[#[HARNESS.b, HARNESS.d], LT],
+    #[#[HARNESS.c, HARNESS.b], GT],
+    #[#[HARNESS.c, HARNESS.d], EQ],
+  ],
 )
