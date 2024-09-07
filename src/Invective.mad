@@ -1,311 +1,125 @@
-import type { Comparison } from "Compare"
-
-import { EQ, GT, LT } from "Compare"
-import { always, equals, identity, ifElse } from "Function"
-import {} from "Functor"
-import Math from "Math"
-
-import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
-
-
-
-export type Vector a = Vector(a, a)
-
-instance Comparable a => Comparable (Vector a) {
-  compare = compareXY
-}
-
-getX :: Vector a -> a
-export getX = where {
-  Vector(x, _) =>
-    x
-}
-
-getY :: Vector a -> a
-export getY = where {
-  Vector(_, y) =>
-    y
-}
-
-compareXY :: Comparable a => Vector a -> Vector a -> Comparison
-export compareXY = (a, b) => where(#[a, b]) {
-  #[Vector(x, y), Vector(x2, y2)] =>
-    do {
-      xEq = x == x2
-      yEq = y == y2
-      xLt = x < x2
-      yLt = y < y2
-      return if (xEq && yEq) {
-        EQ
-      } else if (xLt && yLt) {
-        LT
-      } else if (xEq && yLt) {
-        LT
-      } else if (yEq && xLt) {
-        LT
-      } else {
-        GT
-      }
-    }
-}
-
-compareLength :: Vector Float -> Vector Float -> Comparison
-export compareLength = (a, b) => {
-  aL = length(a)
-  bL = length(b)
-  return if (aL == bL) {
-    EQ
-  } else if (aL < bL) {
-    LT
-  } else {
-    GT
-  }
-}
-
-instance Functor Vector {
-  map = apply
-}
-
-toTuple :: Vector a -> #[a, a]
-export toTuple = where {
-  Vector(x, y) =>
-    #[x, y]
-}
-
-fromTuple :: #[a, a] -> Vector a
-export fromTuple = where {
-  #[x, y] =>
-    Vector(x, y)
-}
-
-vectorize :: a -> Vector a
-export vectorize = (a) => Vector(a, a)
-
-concrete :: (a -> a -> b) -> Vector a -> b
-export concrete = (fn, vec) => where(vec) {
-  Vector(x, y) =>
-    fn(x, y)
-}
-
-modify :: (a -> b) -> (a -> b) -> Vector a -> Vector b
-modify = (fnX, fnY, v) => where(v) {
-  Vector(x, y) =>
-    Vector(fnX(x), fnY(y))
-}
-
-apply :: (a -> b) -> Vector a -> Vector b
-export apply = (fn, v) => modify(fn, fn, v)
-
-applyX :: (a -> a) -> Vector a -> Vector a
-export applyX = (fn, v) => modify(fn, identity, v)
-
-applyY :: (a -> a) -> Vector a -> Vector a
-export applyY = (fn, v) => modify(identity, fn, v)
-
-combine :: Number a => (a -> a -> a -> a -> b) -> Vector a -> Vector a -> b
-export combine = (fn, vec, vec2) => where(#[vec, vec2]) {
-  #[Vector(x, y), Vector(x2, y2)] =>
-    fn(x, y, x2, y2)
-}
-
-add :: Number a => Vector a -> Vector a -> Vector a
-export add = combine((x, y, x2, y2) => Vector(x + x2, y + y2))
-
-divide :: Vector Float -> Vector Float -> Vector Float
-export divide = combine((x, y, x2, y2) => Vector(x / x2, y / y2))
-
-multiply :: Number a => Vector a -> Vector a -> Vector a
-export multiply = combine((x, y, x2, y2) => Vector(x * x2, y * y2))
-
-multiplyX :: Number a => Vector a -> Vector a -> Vector a
-export multiplyX = combine((x, y, x2, _) => Vector(x * x2, y))
-
-multiplyY :: Number a => Vector a -> Vector a -> Vector a
-export multiplyY = combine((x, y, _, y2) => Vector(x, y * y2))
-
-invert :: Number a => Vector a -> Vector a
-export invert = apply(negate)
-
-invertX :: Number a => Vector a -> Vector a
-export invertX = applyX(negate)
-
-invertY :: Number a => Vector a -> Vector a
-export invertY = applyY(negate)
-
-magnitude :: Vector Float -> Float
-export magnitude = concrete(getMagnitude)
-
-length :: Vector Float -> Float
-export length = concrete(
-  (x, y) => pipe(
-    getMagnitude(x),
-    Math.sqrt,
-  )(y),
-)
-
-normalize :: Vector Float -> Vector Float
-export normalize = (vec) => ifElse(
-  pipe(
-    length,
-    equals(0),
-  ),
-  always(Vector(1, 0)),
-  (v) => pipe(
-    length,
-    vectorize,
-    divide(v),
-  )(v),
-)(vec)
-
-_limit = (max, factor, w) => Math.abs(w) > max ? w * factor : w
-
-limit :: Float -> Float -> Vector Float -> Vector Float
-export limit = (max, factor, vec) => apply(_limit(max, factor), vec)
-
-unfloat :: Vector Float -> Vector Float
-export unfloat = apply(Math.round)
-
-mixX :: Float -> Vector Float -> Vector Float -> Vector Float
-export mixX = (s, v1, v2) => combine((x, y, x2, _) => Vector((1 - s) * x + s * x2, y), v1, v2)
-
-mixY :: Float -> Vector Float -> Vector Float -> Vector Float
-export mixY = (s, v1, v2) => combine((x, y, _, y2) => Vector(x, (1 - s) * y + s * y2), v1, v2)
-
-mix :: Float -> Vector Float -> Vector Float -> Vector Float
-export mix = (s, v1, v2) => combine(
-  (x, y, x2, y2) => Vector((1 - s) * x + s * x2, (1 - s) * y + s * y2),
-  v1,
-  v2,
-)
-
-export ZERO = Vector(0, 0)
-
-zero :: Number a => Vector a -> Vector a
-export zero = concrete((_, _) => ZERO)
-
-isZero :: Vector Float -> Boolean
-export isZero = concrete((x, y) => x == 0 && y == 0)
-
-dot :: Vector Float -> Vector Float -> Float
-export dot = combine((x, y, x2, y2) => x * x2 + y * y2)
-
-cross :: Vector Float -> Vector Float -> Float
-export cross = combine((x, y, x2, y2) => (x * y2) - (y * x2))
-
-projectOnto :: Vector Float -> Vector Float -> Vector Float
-export projectOnto = combine(
-  (x, y, x2, y2) => {
-    num = (x * x2) + (y * y2)
-    denom = (x2 * x2) + (y2 * y2)
-    coeff = num / denom
-    return Vector(x2 * coeff, y2 * coeff)
-  },
-)
-
-distanceX :: Vector Float -> Vector Float -> Float
-export distanceX = combine((x, _, x2, _) => x - x2)
-
-distanceY :: Vector Float -> Vector Float -> Float
-export distanceY = combine((_, y, _, y2) => y - y2)
-
-squareDistance :: Vector Float -> Vector Float -> Float
-export squareDistance = combine(
-  (x, y, x2, y2) => {
-    dx = x - x2
-    dy = y - y2
-    return dx * dx + dy * dy
-  },
-)
-
-distance :: Vector Float -> Vector Float -> Float
-export distance = (v1, v2) => pipe(
-  squareDistance(v1),
-  Math.sqrt,
-)(v2)
-
-same :: Vector Float -> Vector Float -> Boolean
-export same = combine((x, y, x2, y2) => x == x2 && y == y2)
-
-rotate :: Float -> Vector Float -> Vector Float
-export rotate = (d, vec) => concrete(
-  (x, y) => {
-    dCos = Math.cos(d)
-    dSin = Math.sin(d)
-    return Vector((x * dCos) - (y * dSin), (x * dSin) + (y * dCos))
-  },
-  vec,
-)
-
-horizontalAngle :: Vector Float -> Float
-export horizontalAngle = concrete((x, y) => Math.atan2(y, x))
-
-horizontalDegree :: Vector Float -> Float
-export horizontalDegree = pipe(
+import { interpolate, rise, run } from "@/List"
+import {
+  ZERO,
+  add,
+  addScalar,
+  addScalarX,
+  addScalarY,
+  apply,
+  applyX,
+  applyY,
+  combine,
+  compareLength,
+  compareXY,
+  concrete,
+  cross,
+  distance,
+  distanceX,
+  distanceY,
+  divide,
+  divideScalar,
+  divideScalarX,
+  divideScalarY,
+  dot,
+  fromTuple,
+  getX,
+  getY,
   horizontalAngle,
-  rad2deg,
-)
-verticalAngle :: Vector Float -> Float
-export verticalAngle = concrete(Math.atan2)
-
-verticalDegree :: Vector Float -> Float
-export verticalDegree = pipe(
+  horizontalDegree,
+  invert,
+  invertX,
+  invertY,
+  isZero,
+  length,
+  limit,
+  magnitude,
+  mix,
+  mixX,
+  mixY,
+  multiply,
+  multiplyScalar,
+  multiplyScalarX,
+  multiplyScalarY,
+  multiplyX,
+  multiplyY,
+  normalize,
+  projectOnto,
+  rotate,
+  rotateBy,
+  rotateByDeg,
+  rotateDeg,
+  rotateTo,
+  rotateToDeg,
+  same,
+  squareDistance,
+  toTuple,
+  unfloat,
+  vectorize,
   verticalAngle,
-  rad2deg,
-)
+  verticalDegree,
+  zero,
+} from "@/Vector"
 
-rotateDeg :: Float -> Vector Float -> Vector Float
-export rotateDeg = (deg, vec) => rotate(deg2rad(deg), vec)
 
-rotateTo :: Float -> Vector Float -> Vector Float
-export rotateTo = (rot, vec) => pipe(
-  horizontalAngle,
-  (h) => rotate(rot - h, vec),
-)(vec)
 
-rotateToDeg :: Float -> Vector Float -> Vector Float
-export rotateToDeg = (rot, vec) => pipe(
-  deg2rad,
-  rotate($, vec),
-)(rot)
-
-rotateBy :: Float -> Vector Float -> Vector Float
-export rotateBy = (rot, vec) => pipe(
-  horizontalAngle,
-  (h) => rotate(h + rot, vec),
-)(vec)
-
-rotateByDeg :: Float -> Vector Float -> Vector Float
-export rotateByDeg = (r, vec) => pipe(
-  deg2rad,
-  rotateBy($, vec),
-)(r)
-
-addScalar :: Number a => a -> Vector a -> Vector a
-export addScalar = (s, v) => apply(Math.add(s), v)
-
-addScalarX :: Number a => a -> Vector a -> Vector a
-export addScalarX = (s, v) => applyX(Math.add(s), v)
-
-addScalarY :: Number a => a -> Vector a -> Vector a
-export addScalarY = (s, v) => applyY(Math.add(s), v)
-
-divideScalar :: Float -> Vector Float -> Vector Float
-export divideScalar = (s, v) => concrete((x, y) => s == 0 ? Vector(0, 0) : Vector(x / s, y / s), v)
-
-zivide :: Float -> Float -> Float
-zivide = (s, w) => s == 0 ? 0 : (w / s)
-
-divideScalarX :: Float -> Vector Float -> Vector Float
-export divideScalarX = (s, v) => applyX(zivide(s), v)
-
-divideScalarY :: Float -> Vector Float -> Vector Float
-export divideScalarY = (s, v) => applyY(zivide(s), v)
-
-multiplyScalar :: Float -> Vector Float -> Vector Float
-export multiplyScalar = (s, v) => apply(Math.multiply(s), v)
-
-multiplyScalarX :: Float -> Vector Float -> Vector Float
-export multiplyScalarX = (s, v) => applyX(Math.multiply(s), v)
-
-multiplyScalarY :: Float -> Vector Float -> Vector Float
-export multiplyScalarY = (s, v) => applyY(Math.multiply(s), v)
+export ZERO
+export add
+export addScalar
+export addScalarX
+export addScalarY
+export apply
+export applyX
+export applyY
+export combine
+export compareLength
+export compareXY
+export concrete
+export cross
+export distance
+export distanceX
+export distanceY
+export divide
+export divideScalar
+export divideScalarX
+export divideScalarY
+export dot
+export fromTuple
+export getX
+export getY
+export horizontalAngle
+export horizontalDegree
+export interpolate
+export invert
+export invertX
+export invertY
+export isZero
+export length
+export limit
+export magnitude
+export mix
+export mixX
+export mixY
+export multiply
+export multiplyScalar
+export multiplyScalarX
+export multiplyScalarY
+export multiplyX
+export multiplyY
+export normalize
+export projectOnto
+export rise
+export rotate
+export rotateBy
+export rotateByDeg
+export rotateDeg
+export rotateTo
+export rotateToDeg
+export run
+export same
+export squareDistance
+export toTuple
+export unfloat
+export vectorize
+export verticalAngle
+export verticalDegree
+export zero

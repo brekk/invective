@@ -4,6 +4,7 @@ import { assertEquals, test } from "Test"
 
 import { caseN2, report } from "Study"
 
+import { getMagnitude } from "@/Math"
 import {
   Vector,
   ZERO,
@@ -58,8 +59,7 @@ import {
   verticalAngle,
   verticalDegree,
   zero,
-} from "@/Invective"
-import { getMagnitude } from "@/Math"
+} from "@/Vector"
 
 
 

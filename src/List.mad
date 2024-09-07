@@ -1,0 +1,47 @@
+import type { Vector } from "@/Vector"
+
+import List from "List"
+
+import { Vector } from "@/Vector"
+
+
+
+rise :: (Comparable a, Number a) => a -> a -> a -> List (Vector a)
+export rise = (x, y, y2) => {
+  _rise = (_a, _b) => pipe(
+    List.range(_a),
+    map(Vector(x)),
+  )(_b + 1)
+
+  return y <= y2
+    ? _rise(y, y2)
+    : pipe(
+      _rise(y2),
+      List.reverse,
+    )(y)
+}
+
+run :: (Comparable a, Number a) => a -> a -> a -> List (Vector a)
+export run = (y, x, x2) => {
+  _run = (_a, _b) => pipe(
+    List.range(_a),
+    map(Vector($, y)),
+  )(_b + 1)
+  return x <= x2
+    ? _run(x, x2)
+    : pipe(
+      _run(x2),
+      List.reverse,
+    )(x)
+}
+
+interpolate :: (Number a, Comparable a) => Boolean -> a -> a -> a -> a -> List (Vector a)
+export interpolate = (riseOverRun, x, y, x2, y2) => if (!riseOverRun) do {
+  a = run(y, x, x2)
+  b = rise(x2, y, y2)
+  return List.concat(a, b)
+} else do {
+  a = rise(x, y, y2)
+  b = run(y2, x, x2)
+  return List.concat(a, b)
+}
