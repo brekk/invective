@@ -1,3 +1,4 @@
+import { EQ, GT, LT } from "Compare"
 import { always, equals, identity, ifElse } from "Function"
 import {} from "Functor"
 import Math from "Math"
@@ -7,6 +8,19 @@ import { deg2rad, getMagnitude, negate, rad2deg } from "@/Math"
 
 
 export type Vector a = Vector(a, a)
+
+instance Comparable a => Comparable (Vector a) {
+  compare = (a, b) => where(#[a, b]) {
+    #[Vector(x, y), Vector(x2, y2)] =>
+      if (x == x2 && y == y2) {
+        EQ
+      } else if ((x == x2 && y < y2) || (x < x2 && y == y2)) {
+        LT
+      } else {
+        GT
+      }
+  }
+}
 
 instance Functor Vector {
   map = apply
