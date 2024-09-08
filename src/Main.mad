@@ -1,0 +1,14 @@
+import IO from "IO"
+
+import Inv from "@/Invective"
+
+
+
+Vector = Inv.Vector
+
+main = () => {
+  pipe(
+    Inv.path(true, Vector(6, 6)),
+    IO.pTrace("path!"),
+  )(Vector(0, 0))
+}
