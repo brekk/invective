@@ -1,5 +1,8 @@
+import type { Vector } from "@/Vector"
+
 import { farthest, interpolate, nearest, rise, run } from "@/List"
 import {
+  Vector,
   ZERO,
   add,
   addScalar,
@@ -62,6 +65,7 @@ import {
 
 
 
+export Vector
 export ZERO
 export add
 export addScalar
@@ -83,6 +87,7 @@ export divideScalar
 export divideScalarX
 export divideScalarY
 export dot
+export farthest
 export fromTuple
 export getX
 export getY
@@ -105,6 +110,7 @@ export multiplyScalarX
 export multiplyScalarY
 export multiplyX
 export multiplyY
+export nearest
 export normalize
 export projectOnto
 export rise
@@ -118,10 +124,9 @@ export run
 export same
 export squareDistance
 export toTuple
+export type Vector
 export unfloat
 export vectorize
 export verticalAngle
 export verticalDegree
 export zero
-export nearest
-export farthest
