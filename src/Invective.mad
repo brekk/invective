@@ -1,6 +1,6 @@
 import type { Vector } from "@/Vector"
 
-import { farthest, interpolate, nearest, rise, run path, } from "@/List"
+import { farthest, interpolate, nearest, path, rise, run } from "@/List"
 import {
   Vector,
   ZERO,
