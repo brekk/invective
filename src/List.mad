@@ -5,7 +5,7 @@ import type { Vector } from "@/Vector"
 import List from "List"
 import { Just, Nothing } from "Maybe"
 
-import { Vector, distance } from "@/Vector"
+import { Vector, combine, distance } from "@/Vector"
 
 
 
@@ -48,6 +48,9 @@ export interpolate = (riseOverRun, x, y, x2, y2) => if (!riseOverRun) do {
   b = run(y2, x, x2)
   return List.concat(a, b)
 }
+
+path :: (Number a, Comparable a) => Boolean -> Vector a -> Vector a -> List (Vector a)
+export path = (riseOverRun, a, b) => combine(interpolate(riseOverRun), a, b)
 
 nearest :: Vector Float -> List (Vector Float) -> Maybe (Vector Float)
 export nearest = (v, vs) => List.reduce(

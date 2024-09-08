@@ -1,6 +1,6 @@
 import type { Vector } from "@/Vector"
 
-import { farthest, interpolate, nearest, rise, run } from "@/List"
+import { farthest, interpolate, nearest, rise, run path, } from "@/List"
 import {
   Vector,
   ZERO,
@@ -112,6 +112,7 @@ export multiplyX
 export multiplyY
 export nearest
 export normalize
+export path
 export projectOnto
 export rise
 export rotate
